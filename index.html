@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shift + Left-Click or Right-Click to Rotate, Left-Click to Drag</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #f0f0f0;
+      overflow: hidden;
+    }
+
+    .container {
+      width: 200px;
+      height: 200px;
+      border: 2px solid #000;
+      position: absolute;
+      touch-action: none;
+      transform-origin: center center;
+      user-select: none;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container" id="rotateDiv">
+  <img id="image" src="https://via.placeholder.com/200" alt="Image">
+</div>
+
+<!-- Include Interact.js from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+
+<script>
+  let x = 0, y = 0;
+  let angle = 0;
+  let isRotating = false;
+  let startAngle = 0;
+  let isShiftKeyPressed = false;
+
+  const container = document.getElementById('rotateDiv');
+
+  // Helper function to calculate the angle between the center of the div and the mouse position
+  function calculateAngle(mouseX, mouseY, rect) {
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    return Math.atan2(mouseY - centerY, mouseX - centerX) * (180 / Math.PI);
+  }
+
+  // Initialize Interact.js for dragging (left-click without Shift)
+  interact(container)
+    .draggable({
+      listeners: {
+        move(event) {
+          if (!isShiftKeyPressed && event.buttons !== 2) { // Only drag with left-click (without Shift key)
+            x += event.dx;
+            y += event.dy;
+            event.target.style.transform = `translate(${x}px, ${y}px) rotate(${angle}deg)`;
+          }
+        }
+      }
+    });
+
+  // Mouse down event to detect Shift + left-click or right-click for rotation gesture
+  container.addEventListener('mousedown', function(e) {
+    if (e.button === 0 && isShiftKeyPressed) { // Shift + Left-click for rotation
+      const rect = container.getBoundingClientRect();
+      startAngle = calculateAngle(e.clientX, e.clientY, rect) - angle;
+      isRotating = true;
+
+      document.addEventListener('mousemove', rotateWithMouse);
+      document.addEventListener('mouseup', endRotation);
+    } else if (e.button === 2) { // Right-click for rotation
+      const rect = container.getBoundingClientRect();
+      startAngle = calculateAngle(e.clientX, e.clientY, rect) - angle;
+      isRotating = true;
+
+      document.addEventListener('mousemove', rotateWithMouse);
+      document.addEventListener('mouseup', endRotation);
+    }
+  });
+
+  // Mouse move event to calculate and apply rotation
+  function rotateWithMouse(e) {
+    if (isRotating) {
+      const rect = container.getBoundingClientRect();
+      const currentAngle = calculateAngle(e.clientX, e.clientY, rect);
+      angle = currentAngle - startAngle;
+      container.style.transform = `translate(${x}px, ${y}px) rotate(${angle}deg)`;
+    }
+  }
+
+  // Mouse up event to stop the rotation gesture
+  function endRotation() {
+    isRotating = false;
+    document.removeEventListener('mousemove', rotateWithMouse);
+    document.removeEventListener('mouseup', endRotation);
+  }
+
+  // Detect when the Shift key is pressed to enable rotation with left-click
+  window.addEventListener('keydown', function(e) {
+    if (e.key === 'Shift') {
+      isShiftKeyPressed = true;
+    }
+  });
+
+  // Detect when the Shift key is released
+  window.addEventListener('keyup', function(e) {
+    if (e.key === 'Shift') {
+      isShiftKeyPressed = false;
+    }
+  });
+
+  // Prevent the default context menu when right-clicking
+  window.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+  });
+</script>
+
+</body>
+</html>
