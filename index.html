@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shift + Left-Click or Right-Click to Rotate, Left-Click to Drag</title>
+  <title>Touch Gesture and Mouse Rotation + Drag</title>
   <style>
     body {
       margin: 0;
@@ -30,6 +30,7 @@
       width: 100%;
       height: 100%;
       pointer-events: none;
+      background-color: red;
     }
   </style>
 </head>
@@ -45,9 +46,9 @@
 <script>
   let x = 0, y = 0;
   let angle = 0;
-  let isRotating = false;
   let startAngle = 0;
   let isShiftKeyPressed = false;
+  let isRotating = false;
 
   const container = document.getElementById('rotateDiv');
 
@@ -68,6 +69,14 @@
             y += event.dy;
             event.target.style.transform = `translate(${x}px, ${y}px) rotate(${angle}deg)`;
           }
+        }
+      }
+    })
+    .gesturable({
+      listeners: {
+        move(event) {
+          angle += event.da;  // da is the rotation delta from the gesture
+          event.target.style.transform = `translate(${x}px, ${y}px) rotate(${angle}deg)`;
         }
       }
     });
@@ -130,3 +139,4 @@
 
 </body>
 </html>
+
