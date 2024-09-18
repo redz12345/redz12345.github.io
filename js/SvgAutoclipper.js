@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
+  
+  window.addEventListener('resize', () => {
+    const images = document.querySelectorAll('img.SvgAutoclip');
+    images.forEach(img => processImage(img));
+  });
+  
   // Function to fetch SVG, extract path data, and update stylesheet
   function processImage(img) {
     fetch(img.src)
@@ -10,6 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // If the SVG also has a viewBox attribute, set the image's style to match
         const svg = svgDoc.querySelector('svg');
         const viewBox = svg.getAttribute('viewBox');
+        console.log(viewBox);
+        
         if (viewBox) {
           const viewBoxArray = viewBox.split(' ');
           img.style.width = `${viewBoxArray[2]}px`;
